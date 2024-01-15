@@ -1,20 +1,22 @@
 #include <iostream>
 using namespace std;
 
-bool field[80][24];
+const int HEIGHT = 24, WIDTH = 80;
 
-void initializeClearField(bool** field, size_t height, size_t width)
+bool field[HEIGHT][WIDTH];
+
+void initializeClearField(bool field[][80], size_t height, size_t width)
 {
-    for (size_t i = 0; i < n; i++) 
+    for (size_t i = 0; i < height; i++) 
     {
-        for (size_t j = 0; j < m; j++) 
+        for (size_t j = 0; j < width; j++) 
         {
-            field[i][j] = false;
+            field[i][j] = 0;
         }
     }
 }
 
-int countNeighbours(bool** field, size_t height, size_t width, int coordinateX, int coordinateY)
+int countNeighbours(bool (*field)[80], size_t height, size_t width, int coordinateX, int coordinateY)
 {
     int countN = 0;
     for (int i = coordinateX - 1; i <= coordinateX + 1; i++)
@@ -30,13 +32,14 @@ int countNeighbours(bool** field, size_t height, size_t width, int coordinateX, 
     return countN;
 }
 
-void printField(bool** field, size_t width, size_t height)
+void printField(bool field[][80], size_t height, size_t width)
 {
+    cout << "Current field:" << endl;
     for (size_t i = 0; i < height; i++)
     {
         for (size_t j = 0; j < width; j++)
         {
-            if (field[i][j] == true)cout << "@";
+            if (field[i][j] == 1) cout << "@";
             else cout << "-";
         }
         cout << endl;
@@ -44,7 +47,7 @@ void printField(bool** field, size_t width, size_t height)
 }
 
 
-void widenUp(bool** field, size_t height, size_t width, int shiftStep)
+void widenUp(bool(*field)[80], size_t height, size_t width, int shiftStep)
 {
     shiftStep = shiftStep * (-1);
     height += shiftStep+1;
@@ -57,7 +60,7 @@ void widenUp(bool** field, size_t height, size_t width, int shiftStep)
     }
 }
 
-void widenLeft(bool** field, size_t &height, size_t &width, int shiftStep)
+void widenLeft(bool(*field)[80], size_t &height, size_t &width, int shiftStep)
 {
     shiftStep = shiftStep * (-1);
     width += shiftStep + 1;
@@ -71,7 +74,7 @@ void widenLeft(bool** field, size_t &height, size_t &width, int shiftStep)
 
 }
 
-void stepForward(bool** field, size_t height, size_t width)
+void stepForward(bool(*field)[80], size_t height, size_t width)
 {
     for (size_t i = 0; i < height; i++)
     {
@@ -90,7 +93,7 @@ void stepForward(bool** field, size_t height, size_t width)
     }
 }
 
-void resizeField(bool** field, size_t &oldHeight, size_t &oldWidth, size_t newHeight, size_t newWidth)
+void resizeField(bool(*field)[80], size_t &oldHeight, size_t &oldWidth, size_t newHeight, size_t newWidth)
 {
     if (oldHeight > newHeight)
     {
@@ -116,15 +119,18 @@ void resizeField(bool** field, size_t &oldHeight, size_t &oldWidth, size_t newHe
     oldWidth = newWidth;
 }
 
-void toggleCell(bool** field, size_t &height, size_t &width, int coordinateX, int coordinateY)
+void toggleCell(bool field[][80], size_t &height, size_t &width, int coordinateX, int coordinateY)
 {
     if (coordinateX <= 0)widenUp(field, height, width, coordinateX);
     else if (coordinateX >= height) height = coordinateX;
 
     if (coordinateY <= 0)widenLeft(field, height, width, coordinateY);
-    else if (coordinateY >= width) width - coordinateY;
+    else if (coordinateY >= width) width = coordinateY;
 
-    field[coordinateX][coordinateY] = !(field[coordinateX][coordinateY]);
+    if (field[coordinateX][coordinateY] == true) field[coordinateX][coordinateY] = false;
+    else field[coordinateX][coordinateY] = true;
+
+    cout << field[coordinateX][coordinateY] << endl;
 }
 
 void saveToFile(bool** field)
@@ -137,11 +143,74 @@ void loadFile(bool** field)
 
 }
 
+void readMatrix(bool(*field[80]))
+{
+
+}
+
+void readMenuCommand(int n)
+{
+
+}
+
 int main()
 {
-    int begin;
+    int begin, step = 0;
+    size_t h, w, newH, newW, coordinateX, coordinateY;
     cout << "Welcome to the Game of Life! Please choose an option:" << endl;
     cout << "For \"New game\" please enter 1...\nFor \"Load game\" please enter 2...\nFor \"Exit\" please enter 3..." << endl;
+    cin >> begin;
+    if (begin == 1)
+    {
+        h = 8;
+        w = 16;
+        initializeClearField(field, h, w);
+    }
+    else if (begin == 2)
+    {
 
-    
+    }
+    else if (begin==3) return 0;
+
+    while (step != 10)
+    {
+        printField(field, h, w);
+
+        cout << "Please choose an option:" << endl;
+        cout << "For \"Step forward\" please enter 4...\nFor \"Resize\" please enter 5...\nFor \"Toggle cell\" please enter 6..." << endl;
+        cout << "For \"Clear\" please enter 7...\nFor \"Randomize\" please enter 8...\nFor \"Save to file\" please enter 9..." << endl;
+        cout << "For \"End\" please enter 10" << endl;
+
+        cin >> step;
+
+        switch (step)
+        {
+        case 4: stepForward(field, h, w); break;
+        case 5: 
+        {
+            cout << "PLease input new height: ";
+            cin >> newH;
+            cout << "PLease input new width";
+            cin >> newW;
+            resizeField(field, h, w, newH, newW);
+        }; break;
+        case 6:
+        {
+            cout << "PLease input coordinate X: ";
+            cin >> coordinateX;
+            cout << "PLease input coordinate Y: ";
+            cin >> coordinateY;
+            toggleCell(field, h, w, coordinateX, coordinateY);
+            cout << field[coordinateX][coordinateY] << endl;
+
+        }; break;
+        case 7:
+        {
+            initializeClearField(field, h, w);
+        } break;
+        case 8:; break;
+        case 9:; break;
+        }
+    }
+
 }
