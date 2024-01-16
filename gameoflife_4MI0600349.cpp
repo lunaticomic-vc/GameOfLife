@@ -4,6 +4,7 @@
 #include<fstream>
 #include<stdlib.h> 
 #include<cmath>
+
 using namespace std;
 
 vector<vector<bool>> field;
@@ -90,9 +91,7 @@ void keepNeighboursCount(int** fieldCountN, vector<vector<bool>> &field, size_t 
         for (size_t j = 0; j < width; j++)
         {
             fieldCountN[i][j] = countNeighbours(field, height, width, i, j);
-            cout << fieldCountN[i][j];
         }
-        cout << endl;
     }
 }
 
@@ -150,7 +149,7 @@ void widenLeft(vector<vector<bool>> &field, size_t &height, size_t &width, int s
     width += shiftSize;
 }
 
-void resizeField(vector<vector<bool>> &field, size_t &oldHeight, size_t &oldWidth, size_t newHeight, size_t newWidth)
+void resizeFieldDownRight(vector<vector<bool>> &field, size_t &oldHeight, size_t &oldWidth, size_t newHeight, size_t newWidth)
 {
     if (oldHeight > newHeight)
     {
@@ -202,34 +201,28 @@ void resizeField(vector<vector<bool>> &field, size_t &oldHeight, size_t &oldWidt
 
 void toggleCell(vector<vector<bool>> &field, size_t &height, size_t &width, int coordinateX, int coordinateY)
 {
-    bool doWidenUp = 0, doWidenLeft = 0;
-
-    cout << "Check 1" << endl;
-
     if (coordinateX <= 0)
     {
         widenUp(field, height, width, coordinateX);
         coordinateX = 1;
     }
-    else if (coordinateX > height) resizeField(field, height, width, coordinateX, width);
-
-    cout << "Check 2" << endl;
+    else if (coordinateX > height) resizeFieldDownRight(field, height, width, coordinateX, width);
 
     if (coordinateY <= 0)
     {
         widenLeft(field, height, width, coordinateY);
         coordinateY = 1;
     }
-    else if (coordinateY > width) resizeField(field, height, width, height, coordinateY);
+    else if (coordinateY > width) resizeFieldDownRight(field, height, width, height, coordinateY);
 
-    if (field[coordinateX-1][coordinateY-1] == 0) field[coordinateX-1][coordinateY-1] = 1;
-    else field[coordinateX-1][coordinateY-1] = 0;
+    field[coordinateX - 1][coordinateY - 1] = !(field[coordinateX - 1][coordinateY - 1]);
 
 }
 
 void randomizeField(vector<vector<bool>> &field, size_t& height, size_t& width, int n)
 {
     int nQuotient;
+
     for (size_t i = 0; i < height; i++)
     {
         for (size_t j = 0; j < width; j++)
@@ -271,9 +264,13 @@ void loadFile(vector<vector<bool>>& field, string nameOfFile, size_t& height, si
             indRow++;
         }
         inputFile.close();
+        height = indRow;
+        width = field[0].size();
     }
-    height = indRow;
-    width = field[0].size();
+    else
+    {
+        cout << "Unable to open file for writing." << endl;
+    }
 }
 
 void saveToFile(vector<vector<bool>> field, string fileName, size_t height, size_t width)
@@ -357,6 +354,7 @@ int main()
         cout << "For \"Randomize\" please enter 8..." << endl; 
         cout << "For \"Save to file\" please enter 9..." << endl;
         cout << "For \"End\" please enter 10" << endl;
+        cout << "For more information please enter 0" << endl;
 
         cin >> step;
 
@@ -368,6 +366,21 @@ int main()
 
         switch (step)
         {
+            case 0:
+            {
+                cout << endl;
+                cout << "For \"Step forward\": \nEnacts a \'step forward\' according to John Conway's rules for \'Game of Life\'." << endl;
+                cout << "Each living cell with 2 or 3 living cells adjacent to it, will remain.The rest will \'die\'." << endl;
+                cout << "All dead cells with exactly 3 living cells adjacent to them will \'come alive\'." << endl << endl;
+                cout << "For \"Resize\": Enlarge or shrink the playing field by giving it new dimensions. " << endl << endl;
+                cout << "For \"Toggle cell\": Replace a living cell at coordinates of your choice with a dead one, or vice versa." << endl << endl;
+                cout << "For \"Clear\": All cells at the playing field will die." << endl << endl;
+                cout << "For \"Randomize\": Each cell will be randomly allocated life or death with a possibility 1 in N for being alive" << endl;
+                cout << "Note: The number N - or the life probability quotient - will be provided by you." << endl << endl;
+                cout << "For \"Save to file\": save your playing field information in a pre-existing \.txt file." << endl << endl;
+                cout << "For \"End\": Leave game" << endl << endl;
+                break;
+            }
             case 4: 
             {
                 stepForward(neighboursCount, field, h, w);
@@ -379,7 +392,9 @@ int main()
                 cin >> newH;
                 cout << "PLease input new width: ";
                 cin >> newW;
-                resizeField(field, h, w, newH, newW);
+
+                resizeFieldDownRight(field, h, w, newH, newW);
+
                 break;
             }
             case 6:
@@ -388,7 +403,9 @@ int main()
                 cin >> coordinateX;
                 cout << "PLease input coordinate Y: ";
                 cin >> coordinateY;
+
                 toggleCell(field, h, w, coordinateX, coordinateY);
+
                 break;
             }
             case 7:
@@ -408,6 +425,7 @@ int main()
                 cout << "Please provide a filename for saving your results." << endl;
                 cin >> fileName;
                 saveToFile(field, fileName, h, w);
+                cout << "Results saved to "<<fileName<< endl;
                 break;
             }
             default: 
