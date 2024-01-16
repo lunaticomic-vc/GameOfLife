@@ -2,7 +2,8 @@
 #include<vector>
 #include<string>
 #include<fstream>
-
+#include<stdlib.h> 
+#include<cmath>
 using namespace std;
 
 vector<vector<bool>> field;
@@ -171,19 +172,19 @@ void keepNeighboursCount(int** fieldCountN, vector<vector<bool>>& field, size_t 
     }
 }
 
-void stepForward(int** countNeighbours, vector<vector<bool>>& field, size_t height, size_t width)
+void stepForward(int** fieldCountN, vector<vector<bool>>& field, size_t height, size_t width)
 {
-    keepNeighboursCount(countNeighbours, field, height, width);
+    keepNeighboursCount(fieldCountN, field, height, width);
 
     for (size_t i = 0; i < height; i++)
     {
         for (size_t j = 0; j < width; j++)
         {
-            if (field[i][j] == 1 && (countNeighbours[i][j] < 2 || countNeighbours[i][j] > 3))
+            if (field[i][j] == 1 && (fieldCountN[i][j] < 2 || fieldCountN[i][j] > 3))
             {
                 field[i][j] = 0;
             }
-            else if (field[i][j] == 0 && countNeighbours[i][j] == 3)
+            else if (field[i][j] == 0 && fieldCountN[i][j] == 3)
             {
                 field[i][j] = 1;
             }
@@ -192,40 +193,37 @@ void stepForward(int** countNeighbours, vector<vector<bool>>& field, size_t heig
     }
 }
 
-void widenUpOrDown(vector<vector<bool>> &field, size_t &height, size_t &width, int shiftStep, bool isDirectionUp)
+void widenUp(vector<vector<bool>> &field, size_t &height, size_t &width, int shiftStep)
 {
-    vector<bool> row;
+    int shiftSize = (-1)*shiftStep + 1;
 
-    int insertStep = 0;
+    vector<bool> row = {};
 
     for (int i = 0; i < width; i++)
     {
         row.push_back(0);
     }
-    if (isDirectionUp == 0) insertStep += field.size();
 
-    for (int i = 0; i < shiftStep; i++)
+    for (int i = 0; i < shiftSize; i++)
     {
-        field.insert(field.begin() + insertStep, row);
-    }
-    
-    height += shiftStep;
+        field.insert(field.begin(), row);
+    }    
+
+    height += shiftSize;
 }
 
-void widenLeftOrRight(vector<vector<bool>> &field, size_t &height, size_t &width, int shiftStep, bool isDirectionLeft)
+void widenLeft(vector<vector<bool>> &field, size_t &height, size_t &width, int shiftStep)
 {
-    vector<bool> col;
-
-    int insertStep = 0;
-
-    if (isDirectionLeft == 0) insertStep += field[0].size();
+    int shiftSize = (-1)*shiftStep + 1;
 
     for (int i = 0; i < height; i++)
     {
-        field[i].insert(field[i].begin() + insertStep, 0);
+        for (int j = 0; j < shiftSize; j++)
+        {
+            field[i].insert(field[i].begin(), 0);
+        }
     }
-
-    width += shiftStep;
+    width += shiftSize;
 }
 
 void resizeField(vector<vector<bool>> &field, size_t &oldHeight, size_t &oldWidth, size_t newHeight, size_t newWidth)
@@ -234,21 +232,26 @@ void resizeField(vector<vector<bool>> &field, size_t &oldHeight, size_t &oldWidt
     {
         for (size_t i = newHeight; i < oldHeight; i++)
         {
-            field[i].clear();
+            field.erase(field.end()-1);
         }
     }
-    else
+    else if(oldHeight < newHeight)
     {
+        vector<bool> row = {};
+
+        for (size_t i = 0; i < newWidth; i++)
+        {
+            row.push_back(0);
+        }
+
         for (size_t i = oldHeight; i < newHeight; i++)
         {
-            field.push_back({0});
-            for (size_t j = 0; j < oldWidth; j++)
-            {
-                field[i].push_back(0);
-            }
+            field.push_back(row);
         }
     }
+
     oldHeight = newHeight;
+
     if (oldWidth > newWidth)
     {
         for (size_t i = 0; i < newHeight; i++)
@@ -259,9 +262,9 @@ void resizeField(vector<vector<bool>> &field, size_t &oldHeight, size_t &oldWidt
             }
         }
     }
-    else
+    else if (oldWidth < newWidth)
     {
-        for (size_t i = 0; i < oldHeight; i++)
+        for (size_t i = 0; i < newHeight; i++)
         {
             for (size_t j = oldWidth; j < newWidth; j++)
             {
@@ -269,37 +272,49 @@ void resizeField(vector<vector<bool>> &field, size_t &oldHeight, size_t &oldWidt
             }
         }
     }
+
     oldWidth = newWidth;
 }
 
 void toggleCell(vector<vector<bool>> &field, size_t &height, size_t &width, int coordinateX, int coordinateY)
 {
-    coordinateX--;
-    coordinateY--;
+    bool doWidenUp = 0, doWidenLeft = 0;
 
-    bool doWidenUp, doWidenLeft;
+    cout << "Check 1" << endl;
 
-    if (coordinateX < 0) doWidenUp = 1;
-    else if (coordinateX >= height) doWidenUp = 0;
+    if (coordinateX <= 0)
+    {
+        widenUp(field, height, width, coordinateX);
+        coordinateX = 1;
+    }
+    else if (coordinateX > height) resizeField(field, height, width, coordinateX, width);
 
-    if(coordinateX< 0 || coordinateX >= height) widenUpOrDown(field, height, width, coordinateX, doWidenUp);
+    cout << "Check 2" << endl;
 
-    if (coordinateY < 0) doWidenLeft = 1;
-    else if (coordinateY >= width) doWidenLeft = 0;
+    if (coordinateY <= 0)
+    {
+        widenLeft(field, height, width, coordinateY);
+        coordinateY = 1;
+    }
+    else if (coordinateY > width) resizeField(field, height, width, height, coordinateY);
 
-    if (coordinateY<0 || coordinateX >= height) widenLeftOrRight(field, height, width, coordinateX, doWidenLeft);
+    if (field[coordinateX-1][coordinateY-1] == 0) field[coordinateX-1][coordinateY-1] = 1;
+    else field[coordinateX-1][coordinateY-1] = 0;
 
-    field[coordinateX][coordinateY] = !(field[coordinateX][coordinateY]);
 }
 
-void saveToFile(vector<vector<bool>> field)
+void randomizeField(vector<vector<bool>> &field, size_t& height, size_t& width, int n)
 {
-
-}
-
-void randomizeField()
-{
-
+    int nQuotient;
+    for (size_t i = 0; i < height; i++)
+    {
+        for (size_t j = 0; j < width; j++)
+        {
+            nQuotient = rand() % n + 1;
+            if (nQuotient == 1)field[i][j] = 1;
+            else field[i][j] = 0;
+        }
+    }
 }
 
 bool translateFieldCharToBool(string row, int index)
@@ -308,31 +323,11 @@ bool translateFieldCharToBool(string row, int index)
     else return 0;
 }
 
-void readFile()
-{
-    std::ifstream file("C:\C++\GameOfLife\x64\Debug\gay.txt");
-
-    if (!file.is_open()) {
-        std::cerr << "Unable to open file\n";
-
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-        std::cout << line << std::endl;
-    }
-
-    file.close();
-}
-
 void loadFile(vector<vector<bool>>& field, string nameOfFile, size_t& height, size_t& width)
 {
     ifstream inputFile(nameOfFile);
-
     string row;
-
     int indRow = 0, indCol = 0;
-
 
     if (inputFile.is_open())
     {
@@ -341,23 +336,24 @@ void loadFile(vector<vector<bool>>& field, string nameOfFile, size_t& height, si
             field.push_back({});
             for (int i = 0; i < row.length(); i++)
             {
-                cout << translateFieldCharToBool(row, i);
                 field[indRow].push_back(translateFieldCharToBool(row, i));
             }
-            cout << endl;
             indRow++;
         }
         inputFile.close();
     }
-    cout << indRow << endl;
     height = indRow;
     width = field[0].size();
+}
+
+void saveToFile(vector<vector<bool>> field)
+{
 
 }
 
 int main()
 {
-    int begin, step = 0;
+    int begin, step = 0, n;
 
     size_t h = 8, w = 16;
     size_t newH, newW, coordinateX, coordinateY;
@@ -371,16 +367,17 @@ int main()
     if (begin == 1)initializeField(field);
     else if (begin == 2)
     {
-        /*cout << "Enter filename: " << endl;
-        cin >> fileName;*/
-        //loadFile(field, "C:\C++\GameOfLife\\x64\Debug\gay.txt", h, w);
-        readFile();
+        cout << "Enter filename:\nNote: For maximum accuracy, please provide absolute filepath.\nE.g.: C\\C++\\GameOfLife\\example.txt NOT example.txt!" << endl;
+        cin >> fileName;
+        loadFile(field, fileName, h, w);
     }
-    else if (begin==3) return 0;
+    else if (begin == 3) return 0;
 
     while (step != 10)
     {
+        cout << "tuka li bugvash dac ti eba maikara" << endl;
         printField(field, h, w);
+        cout << "tuka li bugvash dac ti eba maikara ETOOOOOOOOOOO" << endl;
 
         cout << "Please choose an option:" << endl;
         cout << "For \"Step forward\" please enter 4...\nFor \"Resize\" please enter 5...\nFor \"Toggle cell\" please enter 6..." << endl;
@@ -392,7 +389,7 @@ int main()
         switch (step)
         {
         case 4: stepForward(neighboursCount, field, h, w); break;
-        case 5: 
+        case 5:
         {
             cout << "PLease input new height: ";
             cin >> newH;
@@ -407,23 +404,28 @@ int main()
             cout << "PLease input coordinate Y: ";
             cin >> coordinateY;
             toggleCell(field, h, w, coordinateX, coordinateY);
-            cout << field[coordinateX][coordinateY] << endl;
-
+            cout << "Check 5" << endl;
         }; break;
         case 7:
         {
             clearField(field, h, w);
         } break;
-        case 8:; break;
+        case 8: 
+        {
+            cout << "Please enter randomization quotient: " << endl;
+            cin >> n;
+            randomizeField(field, h, w, n);
+        };
+        break;
         case 9:; break;
         }
     }
 
-    for (int i = 0; i < h; ++i) 
+    for (int i = 0; i < h; ++i)
     {
-        delete[] neighboursCount[h];
+        delete[] neighboursCount[i];
     }
 
-    delete neighboursCount;
+    delete[] neighboursCount;
 
 }
