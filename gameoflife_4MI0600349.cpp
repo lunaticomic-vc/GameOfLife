@@ -1,3 +1,18 @@
+/**
+*  
+* Solution to course project #2
+* Introduction to programming course
+* Faculty of Mathematics and Informatics of Sofia University
+* Winter semester 2023/2024
+*
+* @author Danitsa Kostova
+* @idnumber 4MI0600349
+* @compiler VC
+*
+* <предназначение на файла>
+*
+*/
+
 #include <iostream>
 #include<vector> //for utilizing vectors
 #include<string> //for utilizing strings
