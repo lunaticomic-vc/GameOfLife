@@ -1,5 +1,5 @@
 /**
-*  
+*
 * Solution to course project #2
 * Introduction to programming course
 * Faculty of Mathematics and Informatics of Sofia University
@@ -9,7 +9,7 @@
 * @idnumber 4MI0600349
 * @compiler VC
 *
-* 
+*
 *
 */
 
@@ -257,7 +257,7 @@ void prepareForStepForward(vector<vector<bool>>& field, size_t& height, size_t& 
     }
 
     refCol = width - 1;
-    refRow = height - 1; 
+    refRow = height - 1;
 
     //Checks if field will have to be widened at the bottom, last row used for reference
     if (doesItWidenUpDown(field, height, width, refRow))
@@ -494,8 +494,6 @@ void beginMenu()
 
     if (::begin == 1)
     {
-        h = 8;
-        w = 16;
         initializeField(field);
         gameMenu();
     }
@@ -509,7 +507,11 @@ void beginMenu()
         gameMenu();
     }
 
-    else if (::begin == 3);
+    else if (::begin == 3)
+    {
+        cout << "Thank you for playing. Please come again!" << endl;
+        exit;
+    }
 
     else
     {
@@ -534,81 +536,81 @@ void gameMenu()
 
         switch (step)
         {
-        case 4:
-        {
-            stepForward(field, h, w);
-            break;
-        }
+            case 4:
+            {
+                stepForward(field, h, w);
+                break;
+            }
 
-        case 5:
-        {
-            cout << "PLease input new height: ";
-            cin >> newH;
-            cout << "PLease input new width: ";
-            cin >> newW;
+            case 5:
+            {
+                cout << "PLease input new height: ";
+                cin >> newH;
+                cout << "PLease input new width: ";
+                cin >> newW;
 
-            resizeFieldDown(field, h, w, newH);
-            resizeFieldRight(field, h, w, newW);
-            break;
-        }
+                resizeFieldDown(field, h, w, newH);
+                resizeFieldRight(field, h, w, newW);
+                break;
+            }
 
-        case 6:
-        {
-            cout << "PLease input coordinate X: ";
-            cin >> coordinateX;
-            cout << "PLease input coordinate Y: ";
-            cin >> coordinateY;
+            case 6:
+            {
+                cout << "PLease input coordinate X: ";
+                cin >> coordinateX;
+                cout << "PLease input coordinate Y: ";
+                cin >> coordinateY;
 
-            toggleCell(field, h, w, coordinateX, coordinateY);
-            break;
-        }
+                toggleCell(field, h, w, coordinateX, coordinateY);
+                break;
+            }
 
-        case 7: clearField(field, h, w); break;
+            case 7: clearField(field, h, w); break;
 
-        case 8:
-        {
-            cout << "Please enter randomization quotient: " << endl;
+            case 8:
+            {
+                cout << "Please enter randomization quotient: " << endl;
 
-            cin >> n;
+                cin >> n;
 
-            randomizeField(field, h, w, n);
+                randomizeField(field, h, w, n);
 
-            break;
-        }
+                break;
+            }
 
-        case 9:
-        {
-            cout << "Please provide a filename for saving your results." << endl;
+            case 9:
+            {
+                cout << "Please provide a filename for saving your results." << endl;
 
-            cin >> fileName;
+                cin >> fileName;
 
-            saveToFile(field, fileName, h, w);
+                saveToFile(field, fileName, h, w);
 
-            cout << "Results saved to " << fileName << endl;
+                cout << "Results saved to " << fileName << endl;
 
-            break;
-        }
+                break;
+            }
 
-        case 10:
-        {
-            //Clear field of any values
-            resizeFieldDown(field, h, w, 0);
-            resizeFieldRight(field, h, w, 0);
+            case 10:
+            {
+                //Clear field of any values
+                resizeFieldDown(field, h, w, 0);
+                resizeFieldRight(field, h, w, 0);
 
-            beginMenu();
+                beginMenu();
 
-            break;
-        }
+                break;
+            }
 
-        case 11: infoMenu(); break;
+            case 11: infoMenu(); break;
 
-        default:
-        {
-            errorMessage();
-            goto makeMove;
+            default:
+            {
+                errorMessage();
+                goto makeMove;
 
-            break;
-        }
+                break;
+            }
         }
 
     }
@@ -618,9 +620,5 @@ void gameMenu()
 int main()
 {
     beginMenu();
-
-    cout << "Thank you for playing. Press enter to close program. Please come again!" << endl;
-    std::cin.get();
-    return 0;
 
 }
