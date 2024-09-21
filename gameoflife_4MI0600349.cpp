@@ -19,6 +19,7 @@
 #include<fstream> //for working with files
 #include<stdlib.h> //for rand()
 #include<iomanip> //for setw()
+#include<limits>    
 
 using namespace std;
 
@@ -510,7 +511,7 @@ void beginMenu()
     else if (::begin == 3)
     {
         cout << "Thank you for playing. Please come again!" << endl;
-        exit;
+        exit(0);
     }
 
     else
